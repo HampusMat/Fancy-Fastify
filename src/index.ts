@@ -17,9 +17,20 @@ import { types } from "./types";
 /**
  * Initialize loading Fastify controllers
  *
- * @param container - A Inversify container
+ * @param container - A DI container
  * @param controller_dir - A directory with controllers inside
  * @returns A Fastify plugin that will load your controllers
+ *
+ * @example
+ *
+ * import fastify from "fastify";
+ * import { Container, injectable } from "inversify";
+ * import { fancyFastify } from "fancy-fastify";
+ *
+ * const app = fastify();
+ * const container = new Container();
+ *
+ * app.register(fancyFastify(container, join(__dirname, "controllers")));
  */
 export function fancyFastify(container: IContainer, controller_dir: string): FastifyPluginAsync {
 	return async(fastify: FastifyInstance) => {
@@ -37,7 +48,6 @@ export function fancyFastify(container: IContainer, controller_dir: string): Fas
 		}
 
 		const fancy_fastify = new FancyFastify(container);
-
 		await fancy_fastify.bootstrap(fastify);
 	};
 }
@@ -49,6 +59,22 @@ export function fancyFastify(container: IContainer, controller_dir: string): Fas
  * @param options.method - The HTTP method
  * @param options.url - Url relative to the controller's prefix
  * @returns A route decorator
+ *
+ * @example
+ *
+ * // Omit the square brackets around the @
+ * [@]controller({ name: "API Controller", prefix: "api/v1" })
+ * class APIController {
+ *     // Omit the square brackets around the @
+ *     [@]route({ method: "GET", url: "bananas" })
+ *     public bananas(req: FastifyRequest, reply: FastifyReply) {
+ *         reply.send([
+ *             "one banana",
+ *             "two bananas",
+ *             "three bananas"
+*          ]);
+ *     }
+ * }
  */
 export function route(options: { method: HTTPMethods, url: string}): RouteDecorator {
 	return (target, key, descriptor) => {
@@ -72,6 +98,19 @@ export function route(options: { method: HTTPMethods, url: string}): RouteDecora
  * Define a controller method as that controller's error handler
  *
  * @returns A error handler decorator
+ *
+ * @example
+ *
+ * // Omit the square brackets around the @
+ * [@]controller({ name: "App Controller" })
+ * class AppController {
+ *     // Omit the square brackets around the @
+ *     [@]errorHandler()
+ *     public handleErrors(err: FastifyError, req: FastifyRequest, reply: FastifyReply) {
+ *         console.log(err);
+ *         reply.code(500).send("Internal server error!");
+ *     }
+ * }
  */
 export function errorHandler(): ErrorHandlerDecorator {
 	return (target, key, descriptor) => {
@@ -93,7 +132,15 @@ export function errorHandler(): ErrorHandlerDecorator {
  * @param options.name - The controller's name
  * @param [options.prefix] - The controller's url path prefix
  * @param [options.parent] - The controller's parent controller
- * @returns
+ * @returns A class decorator
+ *
+ * @example
+ *
+ * // Omit the square brackets around the @
+ * [@]controller({ name: "App Controller" })
+ * class AppController {
+ *     // Routes and stuff here
+ * }
  */
 export function controller(options: { name: string, prefix?: string, parent?: string }): ClassDecorator {
 	return target => {
