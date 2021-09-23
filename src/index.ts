@@ -12,8 +12,7 @@ import { Filesystem } from "./lib/filesystem";
 import { ControllerMetadata } from "./metadata/controller.metadata";
 import { ErrorHandlerMetadata } from "./metadata/error_handler.metadata";
 import { RouteMetadata } from "./metadata/route.metadata";
-import { types } from "./types";
-import { importControllers } from "./importer"
+import { importControllers } from "./importer";
 
 /**
  * Initialize loading Fastify controllers
