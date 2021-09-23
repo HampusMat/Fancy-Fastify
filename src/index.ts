@@ -61,6 +61,12 @@ export function fancyFastify(container: IContainer, controller_dir: string, di_d
 	};
 }
 
+export enum PrefixTrailingSlash {
+	Slash = "slash",
+	NoSlash = "no-slash",
+	Both = "both"
+}
+
 /**
  * Define a controller method as a route
  *
@@ -85,7 +91,7 @@ export function fancyFastify(container: IContainer, controller_dir: string, di_d
  *     }
  * }
  */
-export function route(options: { method: HTTPMethods, url: string }): RouteDecorator {
+export function route(options: { method: HTTPMethods, url: string, prefix_trailing_slash?: PrefixTrailingSlash }): RouteDecorator {
 	return (target, key, descriptor) => {
 		const controller_metadata = new ControllerMetadata(target);
 		const route_metadata = new RouteMetadata(target, key.toString());
@@ -94,6 +100,7 @@ export function route(options: { method: HTTPMethods, url: string }): RouteDecor
 		route_metadata.set(route_metadata.keys.Method, options.method);
 		route_metadata.set(route_metadata.keys.Url, options.url);
 		route_metadata.set(route_metadata.keys.Handler, descriptor.value?.name);
+		route_metadata.set(route_metadata.keys.PrefixTrailingSlash, options.prefix_trailing_slash);
 
 		const routes: string[] = controller_metadata.get(controller_metadata.keys.Routes) || [];
 

@@ -8,7 +8,8 @@ export class RouteMetadata implements IMetadata {
 		PrettyType: { name: "pretty_type" },
 		Handler: { name: "handler" },
 		Method: { name: "method" },
-		Url: { name: "url" }
+		Url: { name: "url" },
+		PrefixTrailingSlash: { name: "prefixTrailingSlash" }
 	}
 
 	constructor(controller: Record<string, unknown>, route: string) {
