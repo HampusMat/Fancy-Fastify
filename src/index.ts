@@ -8,6 +8,7 @@ import { ControllerFetcher } from "./controller_fetcher";
 import { FancyFastify } from "./fancy_fastify";
 import { IContainer, IDIDecorator } from "./interfaces/container.interface";
 import { ErrorHandlerDecorator, RouteDecorator } from "./interfaces/fastify.interface";
+import { IHooks } from "./interfaces/hooks.interface";
 import { Filesystem } from "./lib/filesystem";
 import { ControllerMetadata } from "./metadata/controller.metadata";
 import { ErrorHandlerMetadata } from "./metadata/error_handler.metadata";
@@ -26,6 +27,7 @@ declare global {
  * @param container - A DI container
  * @param controller_dir - A directory with controllers inside
  * @param di_decorator - A decorator from a DI container used to mark that a class can be injected
+ * @param [hooks] - Hooks for the various stages in initialization
  * @returns A Fastify plugin that will load your controllers
  *
  * @example
@@ -39,7 +41,9 @@ declare global {
  *
  * app.register(fancyFastify(container, join(__dirname, "controllers")));
  */
-export function fancyFastify(container: IContainer, controller_dir: string, di_decorator: IDIDecorator): FastifyPluginAsync {
+export function fancyFastify(container: IContainer, controller_dir: string, di_decorator: IDIDecorator, hooks?: IHooks): FastifyPluginAsync {
+	global.di_decorator = di_decorator;
+
 	return async(fastify: FastifyInstance) => {
 		global.di_decorator = di_decorator;
 
@@ -53,7 +57,7 @@ export function fancyFastify(container: IContainer, controller_dir: string, di_d
 		await importControllers(controllers, container);
 
 		const fancy_fastify = new FancyFastify(container);
-		await fancy_fastify.bootstrap(fastify);
+		await fancy_fastify.bootstrap(fastify, hooks);
 	};
 }
 

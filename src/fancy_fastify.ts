@@ -8,6 +8,7 @@ import {
 import { IContainer } from "./interfaces/container.interface";
 import { ControllerInstance } from "./interfaces/controller.interface";
 import { ErrorHandler, RouteHandler } from "./interfaces/fastify.interface";
+import { IHooks } from "./interfaces/hooks.interface";
 import { ControllerMetadata } from "./metadata/controller.metadata";
 import { RouteMetadata } from "./metadata/route.metadata";
 import { types } from "./types";
@@ -21,11 +22,15 @@ export class FancyFastify {
 		this._container = container;
 	}
 
-	public async bootstrap(fastify: FastifyInstance): Promise<void> {
+	public async bootstrap(fastify: FastifyInstance, hooks?: IHooks): Promise<void> {
 		const controllers = this._container.getAll<ControllerInstance>(types.Controller);
 
-		for(const controller of controllers)
+		for(const controller of controllers) {
+			if(hooks && hooks.beforeRegisterController)
+				hooks.beforeRegisterController(controller);
+
 			await this.registerController(fastify, controller);
+		}
 	}
 
 	public async registerController(fastify: FastifyInstance, controller: ControllerInstance, is_child = false): Promise<void> {
