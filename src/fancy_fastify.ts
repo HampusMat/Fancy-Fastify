@@ -74,13 +74,18 @@ export class FancyFastify {
 					return error_handler(error, req, reply);
 				});
 
-			for(const child_controller of this.getControllersWithParentOfName(controller_name))
+			for(const child_controller of this.getControllersWithParentOfName(controller_name)) {
 				await this.registerController(plugin, child_controller);
 
-			this.registerRoutesOfController(plugin, controller, controller_metadata);
-		}, { prefix: prefix });
+				const child_controller_metadata = new ControllerMetadata(child_controller);
 
-		controller_metadata.set(controller_metadata.keys.IsRegistered, true);
+				child_controller_metadata.set(child_controller_metadata.keys.IsRegistered, true);
+			}
+
+			this.registerRoutesOfController(plugin, controller, controller_metadata);
+
+			controller_metadata.set(controller_metadata.keys.IsRegistered, true);
+		}, { prefix: prefix });
 	}
 
 	public registerRoutesOfController(fastify: FastifyInstance, controller: ControllerInstance, controller_metadata: ControllerMetadata): void {

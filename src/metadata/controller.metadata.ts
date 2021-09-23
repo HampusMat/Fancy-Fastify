@@ -12,6 +12,7 @@ export class ControllerMetadata implements IMetadata {
 		PrettyType: { name: "pretty_type", in_instance: false },
 		Routes: { name: "routes", in_instance: true },
 		ErrorHandler: { name: "error_handler", in_instance: true },
+		NotFoundHandler: { name: "not_found_handler", in_instance: true },
 		Name: { name: "name", in_instance: false },
 		Prefix: { name: "prefix", in_instance: false },
 		IsRegistered: { name: "is_registered", in_instance: false },
@@ -41,8 +42,8 @@ export class ControllerMetadata implements IMetadata {
 	}
 
 	private _restrictAccessWhenNoInstance(key: IControllerMetadataKey) {
-		if(typeof this._controller === "function" && key.in_instance)
-			throw(new Error("Tried to access a controller instance metadata value from a no-instance controller metadata instance"));
+		if(this._controller.constructor === undefined && key.in_instance)
+			throw(new Error(`Tried to access a controller instance metadata value from a no-instance controller metadata instance of ${key.name}`));
 	}
 
 	private _getControllerForKey(key: IControllerMetadataKey) {

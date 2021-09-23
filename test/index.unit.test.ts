@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { controller, errorHandler, route } from "../src";
+import { controller, errorHandler, NotFoundHandler, notFoundHandler, route } from "../src";
 import { IDIDecorator } from "../src/interfaces/container.interface";
 
 declare global {
@@ -9,7 +9,7 @@ declare global {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-global.di_decorator = () => () => { };
+global.di_decorator = () => () => {};
 
 describe("Index", () => {
 	describe("route", () => {
@@ -56,7 +56,7 @@ describe("Index", () => {
 					reply.code(500).send("Oh no, an error! " + err.message);
 				},
 				async handleErrorsAgain(err: FastifyError, req: FastifyRequest, reply: FastifyReply) {
-					reply.code(404).send("Not found! " + err);
+					reply.code(500).send("Oops! " + err);
 				}
 			};
 
@@ -67,6 +67,65 @@ describe("Index", () => {
 
 			expect(() => decorator(controller, "handleErrorsAgain", { value: controller.handleErrorsAgain }))
 				.toThrow("Duplicate error handler 'handleErrorsAgain'");
+		});
+	});
+
+	describe("NotFoundHandler", () => {
+		it("Should set not found handler metadata", () => {
+			const decorator = notFoundHandler();
+
+			const controller = {
+				async notFound(req: FastifyRequest, reply: FastifyReply) {
+					reply.code(404).send("Page not found!");
+				}
+			};
+
+			decorator(controller, "notFound", { value: controller.notFound });
+
+			expect(Reflect.getMetadata("pretty_type", controller, "notFound")).toEqual("not_found_handler");
+
+			const not_found_handler = Reflect.getMetadata("not_found_handler", controller) as NotFoundHandler;
+
+			expect(not_found_handler).toBeDefined();
+
+			expect(not_found_handler).toHaveProperty("preValidation");
+			expect(typeof not_found_handler.preValidation).toEqual("function");
+
+			expect(not_found_handler).toHaveProperty("preHandler");
+			expect(typeof not_found_handler.preHandler).toEqual("function");
+
+			expect(not_found_handler).toHaveProperty("handler");
+			expect(typeof not_found_handler.handler).toEqual("string");
+		});
+		it("Shouldn't allow multiple not found handlers per controller", () => {
+			const decorator = notFoundHandler();
+
+			const controller = {
+				async notFound(req: FastifyRequest, reply: FastifyReply) {
+					reply.code(404).send("Page not found!");
+				},
+				async notFoundAgain(req: FastifyRequest, reply: FastifyReply) {
+					reply.code(404).send("Page was not found!");
+				}
+			};
+
+			decorator(controller, "notFound", { value: controller.notFound });
+
+			const not_found_handler = Reflect.getMetadata("not_found_handler", controller) as NotFoundHandler;
+
+			expect(not_found_handler).toBeDefined();
+
+			expect(not_found_handler).toHaveProperty("preValidation");
+			expect(typeof not_found_handler.preValidation).toEqual("function");
+
+			expect(not_found_handler).toHaveProperty("preHandler");
+			expect(typeof not_found_handler.preHandler).toEqual("function");
+
+			expect(not_found_handler).toHaveProperty("handler");
+			expect(typeof not_found_handler.handler).toEqual("string");
+
+			expect(() => decorator(controller, "notFoundAgain", { value: controller.notFoundAgain }))
+				.toThrow("Duplicate not found handler 'notFoundAgain'");
 		});
 	});
 

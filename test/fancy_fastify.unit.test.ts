@@ -13,7 +13,7 @@ declare global {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-global.di_decorator = () => () => { };
+global.di_decorator = () => () => {};
 
 describe("FancyFastify", () => {
 	const container = new MockContainer();
@@ -92,8 +92,10 @@ describe("FancyFastify", () => {
 		await expect(fancy_fastify.registerController(app, new FirstController())).resolves.not.toThrow();
 
 		const first_controller_metadata = new ControllerMetadata(FirstController);
-
 		expect(first_controller_metadata.get(first_controller_metadata.keys.IsRegistered)).toBeTruthy();
+
+		const second_controller_metadata = new ControllerMetadata(SecondController);
+		expect(second_controller_metadata.get(second_controller_metadata.keys.IsRegistered)).toBeTruthy();
 
 		const res_one = await app.inject({
 			method: "GET",
@@ -110,10 +112,6 @@ describe("FancyFastify", () => {
 
 		expect(res_two.statusCode).toEqual(200);
 		expect(res_two.body).toEqual("About me");
-
-		const second_controller_metadata = new ControllerMetadata(SecondController);
-
-		expect(second_controller_metadata.get(second_controller_metadata.keys.IsRegistered)).toBeTruthy();
 
 		const res_three = await app.inject({
 			method: "GET",
