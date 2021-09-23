@@ -76,7 +76,7 @@ export function fancyFastify(container: IContainer, controller_dir: string, di_d
  * class APIController {
  *     // Omit the square brackets around the @
  *     [@]route({ method: "GET", url: "bananas" })
- *     public bananas(req: FastifyRequest, reply: FastifyReply) {
+ *     public async bananas(req: FastifyRequest, reply: FastifyReply) {
  *         reply.send([
  *             "one banana",
  *             "two bananas",
@@ -85,7 +85,7 @@ export function fancyFastify(container: IContainer, controller_dir: string, di_d
  *     }
  * }
  */
-export function route(options: { method: HTTPMethods, url: string}): RouteDecorator {
+export function route(options: { method: HTTPMethods, url: string }): RouteDecorator {
 	return (target, key, descriptor) => {
 		const controller_metadata = new ControllerMetadata(target);
 		const route_metadata = new RouteMetadata(target, key.toString());
@@ -115,7 +115,7 @@ export function route(options: { method: HTTPMethods, url: string}): RouteDecora
  * class AppController {
  *     // Omit the square brackets around the @
  *     [@]errorHandler()
- *     public handleErrors(err: FastifyError, req: FastifyRequest, reply: FastifyReply) {
+ *     public async handleErrors(err: FastifyError, req: FastifyRequest, reply: FastifyReply) {
  *         console.log(err);
  *         reply.code(500).send("Internal server error!");
  *     }
