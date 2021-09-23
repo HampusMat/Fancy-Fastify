@@ -1,6 +1,15 @@
 import "reflect-metadata";
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import { controller, errorHandler, route } from "../src";
+import { IDIDecorator } from "../src/interfaces/container.interface";
+
+declare global {
+	// eslint-disable-next-line no-var
+	var di_decorator: IDIDecorator;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+global.di_decorator = () => () => { };
 
 describe("Index", () => {
 	describe("route", () => {

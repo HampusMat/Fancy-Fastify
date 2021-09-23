@@ -17,3 +17,8 @@ export interface IContainer {
 	get<T>(identifier: Identifier<T>): T
 	getAll<T>(identifier: Identifier<T>): T[]
 }
+
+export interface IDIDecorator {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	(): (target: any) => void
+}

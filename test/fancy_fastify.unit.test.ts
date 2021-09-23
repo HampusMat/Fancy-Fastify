@@ -5,6 +5,15 @@ import { ControllerMetadata } from "../src/metadata/controller.metadata";
 import { FancyFastify } from "../src/fancy_fastify";
 import { types } from "../src/types";
 import { MockContainer } from "./mocks/container";
+import { IDIDecorator } from "../src/interfaces/container.interface";
+
+declare global {
+	// eslint-disable-next-line no-var
+	var di_decorator: IDIDecorator;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+global.di_decorator = () => () => { };
 
 describe("FancyFastify", () => {
 	const container = new MockContainer();

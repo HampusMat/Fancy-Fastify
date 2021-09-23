@@ -6,7 +6,7 @@ import {
 import { readdir, stat } from "fs";
 import { ControllerFetcher } from "./controller_fetcher";
 import { FancyFastify } from "./fancy_fastify";
-import { IContainer } from "./interfaces/container.interface";
+import { IContainer, IDIDecorator } from "./interfaces/container.interface";
 import { ErrorHandlerDecorator, RouteDecorator } from "./interfaces/fastify.interface";
 import { Filesystem } from "./lib/filesystem";
 import { ControllerMetadata } from "./metadata/controller.metadata";
@@ -14,11 +14,18 @@ import { ErrorHandlerMetadata } from "./metadata/error_handler.metadata";
 import { RouteMetadata } from "./metadata/route.metadata";
 import { importControllers } from "./importer";
 
+// Global variables available everywhere and across imports
+declare global {
+	// eslint-disable-next-line no-var
+	var di_decorator: IDIDecorator;
+}
+
 /**
  * Initialize loading Fastify controllers
  *
  * @param container - A DI container
  * @param controller_dir - A directory with controllers inside
+ * @param di_decorator - A decorator from a DI container used to mark that a class can be injected
  * @returns A Fastify plugin that will load your controllers
  *
  * @example
@@ -32,8 +39,10 @@ import { importControllers } from "./importer";
  *
  * app.register(fancyFastify(container, join(__dirname, "controllers")));
  */
-export function fancyFastify(container: IContainer, controller_dir: string): FastifyPluginAsync {
+export function fancyFastify(container: IContainer, controller_dir: string, di_decorator: IDIDecorator): FastifyPluginAsync {
 	return async(fastify: FastifyInstance) => {
+		global.di_decorator = di_decorator;
+
 		const controller_fetcher = new ControllerFetcher(new Filesystem(readdir, stat));
 
 		const controllers = await controller_fetcher.getAll(controller_dir);
@@ -140,6 +149,8 @@ export function errorHandler(): ErrorHandlerDecorator {
  */
 export function controller(options: { name: string, prefix?: string, parent?: string }): ClassDecorator {
 	return target => {
+		global.di_decorator()(target);
+
 		const controller_metadata = new ControllerMetadata(target);
 
 		controller_metadata.set(controller_metadata.keys.PrettyType, "controller");
