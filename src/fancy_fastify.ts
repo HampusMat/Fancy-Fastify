@@ -16,6 +16,8 @@ import { types } from "./types";
 export class FancyFastify {
 	private _container: IContainer;
 
+	public controllers_with_parents: ControllerInstance[] = []
+
 	constructor(
 		container: IContainer
 	) {
@@ -25,22 +27,37 @@ export class FancyFastify {
 	public async bootstrap(fastify: FastifyInstance, hooks?: IHooks): Promise<void> {
 		const controllers = this._container.getAll<ControllerInstance>(types.Controller);
 
-		for(const controller of controllers) {
+		const parentless_controllers = controllers.filter(controller => {
+			// Run the user-defined beforeRegisterController hook (if there is one)
 			if(hooks && hooks.beforeRegisterController)
 				hooks.beforeRegisterController(controller);
 
+			const controller_metadata = new ControllerMetadata(controller);
+
+			// Save the controller for later use if it has a parent
+			if(
+				controller_metadata.has(controller_metadata.keys.Parent) &&
+				controller_metadata.get<string>(controller_metadata.keys.Parent) !== undefined
+			) {
+				this.controllers_with_parents.push(controller);
+				return false;
+			}
+
+			return true;
+		});
+
+		for(const controller of parentless_controllers)
 			await this.registerController(fastify, controller);
-		}
 	}
 
-	public async registerController(fastify: FastifyInstance, controller: ControllerInstance, is_child = false): Promise<void> {
+	public async registerController(fastify: FastifyInstance, controller: ControllerInstance): Promise<void> {
 		const controller_metadata = new ControllerMetadata(controller);
 
 		const controller_name = controller_metadata.get<string>(controller_metadata.keys.Name);
 
 		this.verifyController(controller_metadata);
 
-		const should_be_skipped = this.shouldSkipController(controller_metadata, is_child);
+		const should_be_skipped = this.shouldSkipController(controller_metadata);
 
 		if(should_be_skipped.status === true) {
 			console.log(`Skipped registering controller ${controller_name} because ${should_be_skipped.reason}`);
@@ -58,7 +75,7 @@ export class FancyFastify {
 				});
 
 			for(const child_controller of this.getControllersWithParentOfName(controller_name))
-				await this.registerController(plugin, child_controller, true);
+				await this.registerController(plugin, child_controller);
 
 			this.registerRoutesOfController(plugin, controller, controller_metadata);
 		}, { prefix: prefix });
@@ -75,6 +92,7 @@ export class FancyFastify {
 			fastify.route({
 				method: route_metadata.get<HTTPMethods>(route_metadata.keys.Method),
 				url: route_metadata.get<string>(route_metadata.keys.Url),
+				prefixTrailingSlash: route_metadata.get(route_metadata.keys.PrefixTrailingSlash),
 				handler: async(req: FastifyRequest, reply: FastifyReply) => {
 					const route = controller[route_metadata.get<string>(route_metadata.keys.Handler)] as RouteHandler;
 
@@ -89,7 +107,7 @@ export class FancyFastify {
 	}
 
 	public getControllersWithParentOfName(name: string): ControllerInstance[] {
-		return this._container.getAll<ControllerInstance>(types.Controller).filter(potential_child => {
+		return this.controllers_with_parents.filter(potential_child => {
 			const potential_child_metadata = new ControllerMetadata(potential_child);
 
 			const potential_child_name = potential_child_metadata.get<string>(potential_child_metadata.keys.Name);
@@ -99,17 +117,7 @@ export class FancyFastify {
 		});
 	}
 
-	public shouldSkipController(controller_metadata: ControllerMetadata, is_child: boolean): { status: boolean, reason?: string} {
-		if(
-			!is_child &&
-			controller_metadata.has(controller_metadata.keys.Parent) &&
-			controller_metadata.get<string>(controller_metadata.keys.Parent) !== undefined
-		)
-			return {
-				status: true,
-				reason: "it has a parent"
-			};
-
+	public shouldSkipController(controller_metadata: ControllerMetadata): { status: boolean, reason?: string} {
 		if(controller_metadata.get<boolean>(controller_metadata.keys.IsRegistered) === true)
 			return {
 				status: true,
