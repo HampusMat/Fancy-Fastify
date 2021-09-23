@@ -75,10 +75,14 @@ export class FancyFastify {
 			fastify.route({
 				method: route_metadata.get<HTTPMethods>(route_metadata.keys.Method),
 				url: route_metadata.get<string>(route_metadata.keys.Url),
-				handler: (req: FastifyRequest, reply: FastifyReply) => {
+				handler: async(req: FastifyRequest, reply: FastifyReply) => {
 					const route = controller[route_metadata.get<string>(route_metadata.keys.Handler)] as RouteHandler;
 
-					return route(req, reply);
+					/*
+						The route method has to be bound back to it's controller
+						because it forgets this
+					   */
+					return route.bind(controller)(req, reply);
 				}
 			});
 		}
