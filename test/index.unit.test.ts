@@ -1,31 +1,8 @@
 import "reflect-metadata";
-import fastify, { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { controller, errorHandler, fancyFastify, route } from "../src";
-import { MockContainer } from "./mocks/container";
+import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import { controller, errorHandler, route } from "../src";
 
 describe("Index", () => {
-	describe("fancyFastify", () => {
-		const container = new MockContainer();
-
-		afterAll(() => {
-			container.prune();
-		});
-
-		it("Should respond with a valid Fastify plugin", async() => {
-			expect.assertions(2);
-
-			const plugin = fancyFastify(container, "src");
-
-			expect(plugin).toBeDefined();
-
-			const app = fastify();
-
-			await expect(app.register(plugin)).resolves.toBeDefined();
-
-			await app.close();
-		});
-	});
-
 	describe("route", () => {
 		it("Should set route metadata", () => {
 			const decorator = route({ method: "GET", url: "/about" });
