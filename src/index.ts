@@ -13,6 +13,7 @@ import { ControllerMetadata } from "./metadata/controller.metadata";
 import { ErrorHandlerMetadata } from "./metadata/error_handler.metadata";
 import { RouteMetadata } from "./metadata/route.metadata";
 import { types } from "./types";
+import { importControllers } from "./importer"
 
 /**
  * Initialize loading Fastify controllers
@@ -41,11 +42,7 @@ export function fancyFastify(container: IContainer, controller_dir: string): Fas
 		if(controllers.length === 0)
 			return;
 
-		for(const controller of controllers) {
-			const controller_module = await import(controller) as { default: new (...args: unknown[]) => unknown[]};
-
-			container.bind(types.Controller).to(controller_module.default);
-		}
+		await importControllers(controllers, container);
 
 		const fancy_fastify = new FancyFastify(container);
 		await fancy_fastify.bootstrap(fastify);
