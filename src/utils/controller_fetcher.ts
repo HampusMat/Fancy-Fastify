@@ -1,6 +1,6 @@
 import { join } from "path";
-import { IControllerFetcher } from "./interfaces/controller_fetcher.interface";
-import { IFilesystem } from "./interfaces/filesystem.interface";
+import { IControllerFetcher } from "../interfaces/controller_fetcher.interface";
+import { IFilesystem } from "../interfaces/filesystem.interface";
 
 enum PathType {
 	File,

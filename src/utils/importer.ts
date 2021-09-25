@@ -1,7 +1,7 @@
 import { basename } from "path";
-import { IContainer } from "./interfaces/container.interface";
-import { ControllerMetadata } from "./metadata/controller.metadata";
-import { types } from "./types";
+import { IContainer } from "../interfaces/container.interface";
+import { ControllerMetadata } from "../metadata/controller.metadata";
+import { types } from "../types";
 
 export async function importControllers(controllers: string[], container: IContainer): Promise<void> {
 	for(const controller of controllers) {

@@ -1,7 +1,7 @@
-import { ControllerFetcher } from "../src/controller_fetcher";
+import { ControllerFetcher } from "../../src/utils/controller_fetcher";
 import { Volume, createFsFromVolume, DirectoryJSON } from "memfs";
 import { readdir, stat, PathLike } from "fs";
-import { Filesystem } from "../src/lib/filesystem";
+import { Filesystem } from "../../src/lib/filesystem";
 
 const volume = new Volume();
 

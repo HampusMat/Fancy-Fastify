@@ -1,11 +1,16 @@
 import "reflect-metadata";
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
-import { controller, route } from "../src";
-import { ControllerMetadata } from "../src/metadata/controller.metadata";
-import { FancyFastify } from "../src/fancy_fastify";
-import { types } from "../src/types";
-import { MockContainer } from "./mocks/container";
-import { IDIDecorator } from "../src/interfaces/container.interface";
+import { controller, route } from "../../src";
+import { ControllerMetadata } from "../../src/metadata/controller.metadata";
+import { Loader } from "../../src/load";
+import { types } from "../../src/types";
+import { MockContainer } from "../mocks/container";
+import { IDIDecorator } from "../../src/interfaces/container.interface";
+import { ControllerUtils } from "../../src/utils/controller";
+import { ControllerFetcher } from "../../src/utils/controller_fetcher";
+import { Filesystem } from "../../src/lib/filesystem";
+import { importControllers } from "../../src/utils/importer";
+import { readdir, stat } from "fs";
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -15,51 +20,25 @@ declare global {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 global.di_decorator = () => () => {};
 
-describe("FancyFastify", () => {
+describe("Loader", () => {
 	const container = new MockContainer();
 
 	afterAll(() => {
 		container.prune();
 	});
 
-	it("Should verify a controller", () => {
-		const fancy_fastify = new FancyFastify(container);
-
-		@controller({ name: "The first controller", prefix: "/" })
-		class FirstController {
-			@route({ method: "GET", url: "/api/v1" })
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			public async APIRoute(req: FastifyRequest, reply: FastifyReply) {
-				reply.send("This is an api");
-			}
-		}
-
-		container.bind(types.Controller).to(FirstController);
-
-		const first_controller_metadata = new ControllerMetadata(container.get(types.Controller));
-
-		expect(fancy_fastify.verifyController(first_controller_metadata)).toBeTruthy();
-
-		@controller({ name: "The second controller", prefix: "stuff/" })
-		class SecondController {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			public async AboutRoute(req: FastifyRequest, reply: FastifyReply) {
-				reply.send("About me");
-			}
-		}
-
-		container.prune();
-		container.bind(types.Controller).to(SecondController);
-
-		const second_controller_metadata = new ControllerMetadata(container.get(types.Controller));
-
-		expect(() => fancy_fastify.verifyController(second_controller_metadata)).toThrow("Controller The second controller doesn't have any routes");
-	});
-
 	it("Should register a controller", async() => {
 		expect.assertions(9);
 
-		const fancy_fastify = new FancyFastify(container);
+		const bootstrap = new Loader(
+			container,
+			new ControllerUtils(),
+			new ControllerFetcher(
+				new Filesystem(readdir, stat)
+			),
+			importControllers
+		);
+
 		const app = fastify();
 
 		@controller({ name: "The first controller", prefix: "page" })
@@ -87,9 +66,9 @@ describe("FancyFastify", () => {
 		container.bind(types.Controller).to(FirstController);
 		container.bind(types.Controller).to(SecondController);
 
-		fancy_fastify.controllers_with_parents.push(new SecondController());
+		bootstrap.controllers_with_parents.push(new SecondController());
 
-		await expect(fancy_fastify.registerController(app, new FirstController())).resolves.not.toThrow();
+		await expect(bootstrap.registerController(app, new FirstController())).resolves.not.toThrow();
 
 		const first_controller_metadata = new ControllerMetadata(FirstController);
 		expect(first_controller_metadata.get(first_controller_metadata.keys.IsRegistered)).toBeTruthy();
