@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { readdir, stat } from "fs";
-import { Loader } from "./load";
+import { Loader } from "./loader";
 import { IContainer, IDIDecorator } from "./interfaces/container.interface";
 import { IHooks } from "./interfaces/hooks.interface";
 import { Filesystem } from "./lib/filesystem";
@@ -37,7 +37,7 @@ export function fancyFastify(
 	return async(fastify: FastifyInstance) => {
 		global.di_decorator = di_decorator;
 
-		const bootstrap = new Loader(
+		const loader = new Loader(
 			container,
 			new ControllerUtils(),
 			new ControllerFetcher(
@@ -46,6 +46,6 @@ export function fancyFastify(
 			importControllers
 		);
 
-		await bootstrap.load(fastify, controller_dir, hooks);
+		await loader.load(fastify, controller_dir, hooks);
 	};
 }

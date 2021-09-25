@@ -2,7 +2,7 @@ import "reflect-metadata";
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
 import { controller, route } from "../../src";
 import { ControllerMetadata } from "../../src/metadata/controller.metadata";
-import { Loader } from "../../src/load";
+import { Loader } from "../../src/loader";
 import { types } from "../../src/types";
 import { MockContainer } from "../mocks/container";
 import { IDIDecorator } from "../../src/interfaces/container.interface";
@@ -30,7 +30,7 @@ describe("Loader", () => {
 	it("Should register a controller", async() => {
 		expect.assertions(9);
 
-		const bootstrap = new Loader(
+		const loader = new Loader(
 			container,
 			new ControllerUtils(),
 			new ControllerFetcher(
@@ -66,9 +66,9 @@ describe("Loader", () => {
 		container.bind(types.Controller).to(FirstController);
 		container.bind(types.Controller).to(SecondController);
 
-		bootstrap.controllers_with_parents.push(new SecondController());
+		loader.controllers_with_parents.push(new SecondController());
 
-		await expect(bootstrap.registerController(app, new FirstController())).resolves.not.toThrow();
+		await expect(loader.registerController(app, new FirstController())).resolves.not.toThrow();
 
 		const first_controller_metadata = new ControllerMetadata(FirstController);
 		expect(first_controller_metadata.get(first_controller_metadata.keys.IsRegistered)).toBeTruthy();
