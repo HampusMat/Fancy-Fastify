@@ -4,6 +4,7 @@ import {
 	FastifyReply,
 	FastifyRequest
 } from "fastify";
+import { NotFoundHandler } from "./decorators/not_found_handler.decorator";
 import { IContainer } from "./interfaces/container.interface";
 import { ControllerInstance } from "./interfaces/controller.interface";
 import { IControllerFetcher } from "./interfaces/controller_fetcher.interface";
@@ -99,6 +100,16 @@ export class Loader {
 
 					return error_handler(error, req, reply);
 				});
+
+			if(controller_metadata.has(controller_metadata.keys.NotFoundHandler)) {
+				const not_found_handler = controller_metadata
+					.get<NotFoundHandler>(controller_metadata.keys.NotFoundHandler);
+
+				plugin.setNotFoundHandler({
+					preValidation: not_found_handler.preValidation,
+					preHandler: not_found_handler.preHandler
+				}, controller[not_found_handler.handler]);
+			}
 
 			// Register all of the controllers that has this controller as a parent
 			const child_controllers = this._controller_utils
