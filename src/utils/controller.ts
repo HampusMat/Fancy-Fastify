@@ -1,7 +1,7 @@
-import { FastifyReply, FastifyRequest, HTTPMethods, RouteOptions } from "fastify";
+import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 import { ControllerInstance } from "../interfaces/controller.interface";
 import { IControllerUtils, ShouldControllerBeSkipped, SortedControllers } from "../interfaces/controller_utils.interface";
-import { RouteHandler } from "../interfaces/fastify.interface";
+import { IFancyRequest, FancyRouteOptions, RouteHandler } from "../interfaces/fastify.interface";
 import { IHooks } from "../interfaces/hooks.interface";
 import { ControllerMetadata } from "../metadata/controller.metadata";
 import { RouteMetadata } from "../metadata/route.metadata";
@@ -67,7 +67,10 @@ export class ControllerUtils implements IControllerUtils {
 		}, { with_parent: [], without_parent: [] });
 	}
 
-	public getControllerRoutes(controller: ControllerInstance, routes: string[]): RouteOptions[] {
+	public getControllerRoutes(
+		controller: ControllerInstance,
+		routes: string[]
+	): FancyRouteOptions[] {
 		return routes.map(route => {
 			const route_metadata = new RouteMetadata(controller, route);
 
@@ -75,7 +78,7 @@ export class ControllerUtils implements IControllerUtils {
 				method: route_metadata.get<HTTPMethods>(route_metadata.keys.Method),
 				url: route_metadata.get<string>(route_metadata.keys.Url),
 				prefixTrailingSlash: route_metadata.get(route_metadata.keys.PrefixTrailingSlash),
-				handler: async(req: FastifyRequest, reply: FastifyReply) => {
+				handler: async(req: FastifyRequest<IFancyRequest>, reply: FastifyReply) => {
 					const route = controller[route_metadata.get<string>(route_metadata.keys.Handler)] as RouteHandler;
 
 					/*

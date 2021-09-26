@@ -11,3 +11,5 @@ export * from "./decorators/controller.decorator";
 export * from "./decorators/error_handler.decorator";
 export * from "./decorators/not_found_handler.decorator";
 export * from "./decorators/route.decorator";
+
+export * from "./interfaces/fastify.interface";

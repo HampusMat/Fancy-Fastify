@@ -1,27 +1,32 @@
 import {
 	FastifyRequest,
 	FastifyReply,
-	RawServerBase,
+	FastifyError,
 	RawRequestDefaultExpression,
 	RawReplyDefaultExpression,
-	ContextConfigDefault,
-	RawServerDefault,
-	FastifyError
+	RouteOptions
 } from "fastify";
-import { RouteGenericInterface } from "fastify/types/route";
+import { Server } from "http";
 
-export interface RouteHandler<
-	RouteGeneric extends RouteGenericInterface = RouteGenericInterface,
-	RawServer extends RawServerBase = RawServerDefault,
-	RawRequest extends RawRequestDefaultExpression<RawServer> = RawRequestDefaultExpression<RawServer>,
-	RawReply extends RawReplyDefaultExpression<RawServer> = RawReplyDefaultExpression<RawServer>,
-	ContextConfig = ContextConfigDefault
-> {
+export interface IFancyRequest {
+	Params: Record<string, string>
+	Querystring: Record<string, string>
+}
+
+export interface RouteHandler {
 	(
-		request: FastifyRequest<RouteGeneric, RawServer, RawRequest>,
-		reply: FastifyReply<RawServer, RawRequest, RawReply, RouteGeneric, ContextConfig>
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		request: FastifyRequest<IFancyRequest>,
+		reply: FastifyReply,
 	): Promise<void>
 }
+
+export type FancyRouteOptions = RouteOptions<
+	Server,
+	RawRequestDefaultExpression,
+	RawReplyDefaultExpression,
+	IFancyRequest
+>
 
 export interface ErrorHandler {
 	(error: FastifyError, request: FastifyRequest, reply: FastifyReply): void

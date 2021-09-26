@@ -1,6 +1,6 @@
-import { RouteOptions } from "fastify";
 import { ControllerMetadata } from "../metadata/controller.metadata";
 import { ControllerInstance } from "./controller.interface";
+import { FancyRouteOptions } from "./fastify.interface";
 import { IHooks } from "./hooks.interface";
 
 export interface SortedControllers {
@@ -18,5 +18,5 @@ export interface IControllerUtils {
 	shouldSkipController(controller_metadata: ControllerMetadata): ShouldControllerBeSkipped
 	verifyController(controller_metadata: ControllerMetadata): boolean
 	sortControllersByHasParent(controllers: ControllerInstance[], hooks?: IHooks): SortedControllers
-	getControllerRoutes(controller: ControllerInstance, routes: string[]): RouteOptions[]
+	getControllerRoutes(controller: ControllerInstance, routes: string[]): FancyRouteOptions[]
 }
