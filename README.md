@@ -1,5 +1,5 @@
 # What it Fancy-Fastify?
-Fancy-Fastify is a Typescript library that provides decorators for Fastify.
+Fancy-Fastify is a Typescript library that provides decorators for Fastify that integrates with your DI container of choice.
 
-# What's the difference between this and Fastify-decorators?
-This library integrates with your DI container. Fastify-decorators cannot do this.
+# Hacking
+Join the [mailing list](https://lists.hampusmat.com/mailman3/lists/fancy-fastify.lists.hampusmat.com/) for discussions, news & submitting patches.
