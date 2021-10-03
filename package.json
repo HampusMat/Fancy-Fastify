@@ -1,6 +1,11 @@
 {
   "name": "fancy-fastify",
   "version": "0.0.1",
+  "homepage": "https://git.hampusmat.com/fancy-fastify",
+  "repository": {
+    "type": "git",
+    "url": "https://git.hampusmat.com/fancy-fastify"
+  },
   "main": "src/index.ts",
   "author": "HampusMat",
   "license": "MIT",
